@@ -1,44 +1,32 @@
-"""
-Client for the Smart Water Tank Environment.
-"""
+"""Client for the Smart Water Tank Environment."""
 import os
-from openenv.client import BaseEnv
+import logging
+
+# Robust import logic for OpenEnv Client
+try:
+    from openenv.core.env_client import HTTPEnvClient as EnvClient
+except ImportError:
+    try:
+        from openenv.core.env_client import EnvClient
+    except ImportError:
+        try:
+            from openenv.client import BaseEnv as EnvClient
+        except ImportError:
+            raise ImportError("Could not find a valid OpenEnv Client class. Please check your openenv-core version.")
 
 from .models import MotorAction, WaterTankObservation
 
-class MyFirstEnv(BaseEnv[MotorAction, WaterTankObservation]):
+class MyFirstEnv(EnvClient[MotorAction, WaterTankObservation]):
     """
     Client for the Smart Water Tank Environment.
-    
-    Provides convenient access to the water tank control environment
-    with three tasks of increasing difficulty:
-    - basic_balance (easy)
-    - emergency_recovery (medium)
-    - efficient_management (hard)
     """
     
     def __init__(self, url: str | None = None, api_key: str | None = None, **kwargs):
-        """
-        Initialize the environment client.
-        
-        Args:
-            url: Server URL (default: http://localhost:8000)
-            api_key: API key for authentication (optional)
-            **kwargs: Additional arguments passed to BaseEnv
-        """
-        super().__init__(url=url, api_key=api_key, **kwargs)
-    
+        # Default to local dev server if no URL is provided
+        target_url = url or os.environ.get("OPENENV_URL", "http://localhost:8000")
+        super().__init__(url=target_url, api_key=api_key, **kwargs)
+
     def reset(self, task_type: str = "basic_balance", **kwargs) -> WaterTankObservation:
-        """
-        Reset the environment for a new episode.
-        
-        Args:
-            task_type: One of "basic_balance", "emergency_recovery", "efficient_management"
-            **kwargs: Additional reset arguments
-            
-        Returns:
-            WaterTankObservation for the initial state
-        """
         reset_kwargs = {"task_type": task_type}
         reset_kwargs.update(kwargs)
         return super().reset(**reset_kwargs)
