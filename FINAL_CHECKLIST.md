@@ -71,7 +71,7 @@ git add .
 git commit -m "Initial OpenEnv submission"
 
 # Push to GitHub
-git remote add origin https://github.com/swarnakishore/my_first_env.git
+git remote add origin https://github.com/swarnakishore/my_first_env1.git
 git branch -M main
 git push -u origin main
 ```
