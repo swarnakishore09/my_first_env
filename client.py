@@ -1,6 +1,7 @@
 """Client for the Smart Water Tank Environment."""
 import os
 import logging
+from typing import Optional
 
 # Robust import logic for OpenEnv Client
 try:
@@ -19,12 +20,18 @@ try:
 except ImportError:
     from .models import MotorAction, WaterTankObservation
 
-class MyFirstEnv(EnvClient[MotorAction, WaterTankObservation]):
+# Build the base class safely — EnvClient may not support generic subscripting
+try:
+    _Base = EnvClient[MotorAction, WaterTankObservation]
+except TypeError:
+    _Base = EnvClient
+
+class MyFirstEnv(_Base):
     """
     Client for the Smart Water Tank Environment.
     """
     
-    def __init__(self, url: str | None = None, api_key: str | None = None, **kwargs):
+    def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None, **kwargs):
         # Default to local dev server if no URL is provided
         target_url = url or os.environ.get("OPENENV_URL", "http://localhost:8000")
         super().__init__(url=target_url, api_key=api_key, **kwargs)
