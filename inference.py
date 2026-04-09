@@ -31,7 +31,7 @@ async def run_task(env, task_id):
     try:
         obs = await env.reset(task_type=task_id)
     except Exception as e:
-        print(f"[END] success=false steps=0 score=0.000 rewards= error={str(e)}", flush=True)
+        print(f"[END] success=false steps=0 score=0.001 rewards= error={str(e)}", flush=True)
         return
 
     for step in range(1, 51):
@@ -64,9 +64,9 @@ async def run_task(env, task_id):
     success = not obs.is_overflowing and not obs.is_empty
     
     # Assuming standard rewards, calculate a normalized score
-    # If your environment returns negative rewards, this clamps it to 0
+    # Clamping it strictly inside (0, 1) per validator constraints
     raw_score = sum(rewards) / len(rewards) if rewards else 0.0
-    final_score = min(max(raw_score, 0.0), 1.0) 
+    final_score = min(max(raw_score, 0.001), 0.999) 
     
     # [END] MANDATORY FORMAT (Now includes score!)
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
