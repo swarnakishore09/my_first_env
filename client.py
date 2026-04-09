@@ -14,7 +14,10 @@ except ImportError:
         except ImportError:
             raise ImportError("Could not find a valid OpenEnv Client class. Please check your openenv-core version.")
 
-from .models import MotorAction, WaterTankObservation
+try:
+    from models import MotorAction, WaterTankObservation
+except ImportError:
+    from .models import MotorAction, WaterTankObservation
 
 class MyFirstEnv(EnvClient[MotorAction, WaterTankObservation]):
     """
