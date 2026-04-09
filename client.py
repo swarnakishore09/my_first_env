@@ -61,10 +61,17 @@ class MyFirstEnv(_Base):
     def _parse_result(self, payload: dict):
         """Parse the server's step response into (observation, reward, done, info)."""
         obs_data = payload.get("observation", payload)
+
+        # Handle double-wrapped payload from openenv server wrapper
+        if isinstance(obs_data, dict) and "observation" in obs_data:
+            info = obs_data.get("info", {})
+            obs_data = obs_data["observation"]
+        else:
+            info = payload.get("info", {})
+
         observation = WaterTankObservation(**obs_data) if isinstance(obs_data, dict) else obs_data
         reward = float(payload.get("reward", 0.0))
         done = bool(payload.get("done", False))
-        info = payload.get("info", {})
         return observation, reward, done, info
 
     def _parse_state(self, payload: dict) -> WaterTankObservation:
@@ -74,4 +81,12 @@ class MyFirstEnv(_Base):
     async def reset(self, task_type: str = "basic_balance", **kwargs) -> WaterTankObservation:
         reset_kwargs = {"task_type": task_type}
         reset_kwargs.update(kwargs)
-        return await super().reset(**reset_kwargs)
+        result = await super().reset(**reset_kwargs)
+        
+        # super().reset() calls our _parse_result which returns a tuple,
+        # but reset must return ONLY the observation to match inference.py expectations
+        if isinstance(result, tuple):
+            return result[0]
+        elif hasattr(result, 'observation'):
+            return result.observation
+        return result

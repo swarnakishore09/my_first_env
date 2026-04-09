@@ -23,11 +23,16 @@ except ImportError:
     from my_first_env.models import MotorAction
 
 async def run_task(env, task_id):
-    obs = await env.reset(task_type=task_id)
-    rewards = []
-    
     # [START] MANDATORY FORMAT
     print(f"[START] task={task_id} env=smart_water_tank model={MODEL_NAME}", flush=True)
+
+    rewards = []
+    
+    try:
+        obs = await env.reset(task_type=task_id)
+    except Exception as e:
+        print(f"[END] success=false steps=0 score=0.000 rewards= error={str(e)}", flush=True)
+        return
 
     for step in range(1, 51):
         try:
