@@ -3,6 +3,9 @@ import uuid
 from pydantic import BaseModel, Field
 from typing import Literal
 
+# Available task types
+TASK_TYPES = ["basic_balance", "emergency_recovery", "efficient_management"]
+
 # ==========================================
 # 1. DEFINE WHAT THE AI CAN DO (ACTION)
 # ==========================================

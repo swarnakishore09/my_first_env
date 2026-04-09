@@ -4,10 +4,10 @@ from openai import OpenAI
 
 # 1. Mandatory Environment Variables
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "smart 1.0")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-if not HF_TOKEN:
+if HF_TOKEN is None:
     print("Error: HF_TOKEN is missing.")
     sys.exit(1)
 
