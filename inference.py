@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 from openai import OpenAI
 
 # 1. Mandatory Environment Variables
@@ -21,8 +22,8 @@ except ImportError:
     from my_first_env.client import MyFirstEnv
     from my_first_env.models import MotorAction
 
-def run_task(env, task_id):
-    obs = env.reset(task_type=task_id)
+async def run_task(env, task_id):
+    obs = await env.reset(task_type=task_id)
     rewards = []
     
     # [START] MANDATORY FORMAT
@@ -40,7 +41,7 @@ def run_task(env, task_id):
             res_text = response.choices[0].message.content.lower()
             act_val = 1 if "on" in res_text or "1" in res_text else 0
             
-            obs, reward, done, info = env.step(MotorAction(motor_status=act_val))
+            obs, reward, done, info = await env.step(MotorAction(motor_status=act_val))
             rewards.append(float(reward))
             
             act_str = "turn_pump_on()" if act_val == 1 else "turn_pump_off()"
@@ -66,7 +67,7 @@ def run_task(env, task_id):
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(f"[END] success={str(success).lower()} steps={len(rewards)} score={final_score:.3f} rewards={rewards_str}", flush=True)
 
-def main():
+async def main():
     # Use the exact task names your environment engine expects
     tasks = ["basic_balance", "emergency_recovery", "efficient_management"]
     
@@ -75,13 +76,15 @@ def main():
     
     try:
         for tid in tasks:
-            run_task(env, tid)
+            await run_task(env, tid)
     finally:
         # Good practice to close the env just like the sample
         try:
-            env.close()
+            close_coro = env.close()
+            if asyncio.iscoroutine(close_coro):
+                await close_coro
         except Exception:
             pass
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

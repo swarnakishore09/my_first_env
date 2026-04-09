@@ -71,7 +71,7 @@ class MyFirstEnv(_Base):
         """Parse the server's state response into a WaterTankObservation."""
         return WaterTankObservation(**payload)
 
-    def reset(self, task_type: str = "basic_balance", **kwargs) -> WaterTankObservation:
+    async def reset(self, task_type: str = "basic_balance", **kwargs) -> WaterTankObservation:
         reset_kwargs = {"task_type": task_type}
         reset_kwargs.update(kwargs)
-        return super().reset(**reset_kwargs)
+        return await super().reset(**reset_kwargs)
