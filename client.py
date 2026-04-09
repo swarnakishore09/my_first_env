@@ -34,7 +34,25 @@ class MyFirstEnv(_Base):
     def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None, **kwargs):
         # Default to local dev server if no URL is provided
         target_url = url or os.environ.get("OPENENV_URL", "http://localhost:8000")
-        super().__init__(url=target_url, api_key=api_key, **kwargs)
+        
+        # Different versions of OpenEnv use different init arguments
+        import inspect
+        sig = inspect.signature(_Base.__init__)
+        init_kwargs = {}
+        
+        if "base_url" in sig.parameters:
+            init_kwargs["base_url"] = target_url
+        elif "url" in sig.parameters:
+            init_kwargs["url"] = target_url
+            
+        if "api_key" in sig.parameters:
+            init_kwargs["api_key"] = api_key
+            
+        for k, v in kwargs.items():
+            if k in sig.parameters:
+                init_kwargs[k] = v
+                
+        super().__init__(**init_kwargs)
 
     def _step_payload(self, action: MotorAction) -> dict:
         """Convert a MotorAction into a JSON-compatible dict for the /step endpoint."""
