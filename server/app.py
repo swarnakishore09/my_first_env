@@ -13,7 +13,7 @@ except ImportError:
 
 # Import your custom models and environment
 from models import MotorAction, WaterTankObservation
-from my_first_env_environment import MyFirstEnvironment
+from .my_first_env_environment import MyFirstEnvironment
 
 # 3. Create the FastAPI app
 # We pass the CLASS (MyFirstEnvironment), not an instance. 
