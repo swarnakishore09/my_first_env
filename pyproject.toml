@@ -15,6 +15,9 @@ dependencies = [
     "openai"
 ]
 
+[project.scripts]
+server = "server.app:main"
+
 [tool.setuptools]
 include-package-data = true
 
