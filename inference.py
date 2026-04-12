@@ -36,7 +36,7 @@ async def run_task(env, task_id):
 
     for step in range(1, 51):
         try:
-            prompt = f"Water Level: {obs.current_water_level:.1f}%. Action (ON/OFF)?"
+            prompt = f"Water Level: {obs.current_water_level:.1f}%. Quality: {obs.quality_status}. {obs.recommendation} Action (ON/OFF)?"
             response = client.chat.completions.create(
                 model=MODEL_NAME,
                 messages=[{"role": "user", "content": prompt}],
@@ -52,7 +52,7 @@ async def run_task(env, task_id):
             act_str = "turn_pump_on()" if act_val == 1 else "turn_pump_off()"
             
             # [STEP] MANDATORY FORMAT
-            print(f"[STEP] step={step} action={act_str} reward={reward:.2f} done={str(done).lower()} error=null", flush=True)
+            print(f"[STEP] step={step} action={act_str} reward={reward:.2f} done={str(done).lower()} quality={obs.quality_status} error=null", flush=True)
             
             if done: break
             

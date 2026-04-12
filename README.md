@@ -75,11 +75,60 @@ The environment server will be available at `http://localhost:8000`.
 
 ---
 
+## 🔍 Water Quality Monitoring
+
+The environment includes **real-time water quality monitoring** based on turbidity levels. The system automatically evaluates water quality and provides actionable recommendations:
+
+| Quality Status | Condition | Recommendation |
+|---------------|-----------|----------------|
+| ✅ **GOOD** | Turbidity ≤ 5 NTU | Water quality is good. No action needed. |
+| ❌ **BAD** | Turbidity > 5 NTU | Turbidity high — clean the tank. |
+
+- Water turbidity **increases naturally over time** as the tank operates
+- Resetting the environment simulates **cleaning/changing the water** (turbidity resets to clean levels)
+- Quality status and recommendation are included in every observation and API response
+
+---
+
+## 📱 Remote Pump Control — Access From Anywhere
+
+Control the water pump from **any device, anywhere in the world** using the deployed API:
+
+```bash
+# Deployed URL (accessible from any mobile phone or computer)
+https://swarnakishore-my-first-env.hf.space
+```
+
+### Turn Pump ON from your phone:
+```bash
+curl -X POST https://swarnakishore-my-first-env.hf.space/step \
+  -H "Content-Type: application/json" \
+  -d '{"motor_status": 1}'
+```
+
+### Turn Pump OFF:
+```bash
+curl -X POST https://swarnakishore-my-first-env.hf.space/step \
+  -H "Content-Type: application/json" \
+  -d '{"motor_status": 0}'
+```
+
+### Check current status (water level + quality):
+```bash
+curl https://swarnakishore-my-first-env.hf.space/state
+```
+
+The response includes `quality_status` (`GOOD` / `BAD`) and `recommendation` so you always know if the tank needs cleaning or water change.
+
+> **💡 Tip:** You can use any HTTP client app on your phone (like **HTTP Shortcuts** on Android or **Shortcuts** on iOS) to create one-tap buttons for pump ON/OFF control.
+
+---
+
 ## 🔧 Action and Observation Space
 
 **Action:** `MotorAction` — Set `motor_status` to `1` (ON) or `0` (OFF).
 
-**Observation:** `WaterTankObservation` — Returns current water level, demand rate, inflow rate, and overflow/empty status.
+**Observation:** `WaterTankObservation` — Returns current water level, demand rate, inflow rate, overflow/empty status, `quality_status`, and `recommendation`.
 
 ---
 

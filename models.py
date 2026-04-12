@@ -1,7 +1,7 @@
 import random
 import uuid
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Tuple
 
 # Available task types
 TASK_TYPES = ["basic_balance", "emergency_recovery", "efficient_management"]
@@ -24,6 +24,10 @@ class WaterTankObservation(BaseModel):
     is_overflowing: bool = Field(description="True if water hit 100%")
     is_empty: bool = Field(description="True if water hit 0%")
     reward: float = 0.0
+    # Water Quality Monitoring
+    turbidity_ntu: float = Field(default=1.0, description="Water turbidity in NTU (Nephelometric Turbidity Units)")
+    quality_status: str = Field(default="GOOD", description="Water quality: GOOD or BAD")
+    recommendation: str = Field(default="Water quality is good. No action needed.", description="Actionable recommendation for the user")
 
 # ==========================================
 # 3. DEFINE INTERNAL TRACKING (STATE)
@@ -43,15 +47,34 @@ class WaterTankState(BaseModel):
     
     # NEW: This field allows us to see custom alerts in the JSON!
     status_message: str = "Ready"
+    
+    # Water Quality Monitoring — turbidity increases over time
+    turbidity_ntu: float = Field(default=1.0, description="Current water turbidity in NTU")
+
+# ==========================================
+# WATER QUALITY HELPERS
+# ==========================================
+def evaluate_water_quality(turbidity_ntu: float) -> Tuple[str, str]:
+    """Evaluate water quality based on turbidity.
+    Returns (quality_status, recommendation).
+    """
+    if turbidity_ntu > 5.0:
+        return "BAD", "Turbidity high \u2014 clean the tank."
+    else:
+        return "GOOD", "Water quality is good. No action needed."
 
 def get_observation(state: WaterTankState, current_reward: float = 0.0) -> WaterTankObservation:
+    quality_status, recommendation = evaluate_water_quality(state.turbidity_ntu)
     return WaterTankObservation(
         current_water_level=round(state.current_water_level, 2),
         current_demand_rate=round(state.demand_rate, 2),
         inflow_rate=round(state.inflow_rate, 2),
         is_overflowing=state.current_water_level >= 100.0,
         is_empty=state.current_water_level <= 0.0,
-        reward=current_reward
+        reward=current_reward,
+        turbidity_ntu=round(state.turbidity_ntu, 2),
+        quality_status=quality_status,
+        recommendation=recommendation
     )
 
 # ==========================================
@@ -66,6 +89,8 @@ def reset(difficulty: str = "medium", task_type: str = "basic_balance") -> tuple
         inflow, demand = random.uniform(5.0, 15.0), random.uniform(5.0, 12.0)
 
     initial_level = random.uniform(40.0, 60.0)
+    # Start with clean water (low turbidity)
+    initial_turbidity = random.uniform(0.5, 2.0)
     
     initial_state = WaterTankState(
         current_water_level=initial_level,
@@ -74,7 +99,8 @@ def reset(difficulty: str = "medium", task_type: str = "basic_balance") -> tuple
         inflow_rate=inflow,
         demand_rate=demand,
         task_type=task_type,
-        status_message="System Reset - Waiting for first step"
+        status_message="System Reset - Waiting for first step",
+        turbidity_ntu=initial_turbidity
     )
     
     return get_observation(initial_state), initial_state
@@ -91,6 +117,11 @@ def step(action: MotorAction, state: WaterTankState) -> tuple[WaterTankObservati
     water_in = state.inflow_rate if action.motor_status == 1 else 0.0
     state.current_water_level += (water_in - state.demand_rate)
     state.current_water_level = max(0.0, min(100.0, state.current_water_level))
+
+    # Water quality degrades over time — turbidity slowly increases each step
+    turbidity_increase = random.uniform(0.1, 0.4)
+    state.turbidity_ntu += turbidity_increase
+    state.turbidity_ntu = min(state.turbidity_ntu, 20.0)  # Cap at 20 NTU
 
     # --- NEW ALERT & WARNING LOGIC ---
     # We round to 1 decimal place to catch the 50% alert more easily

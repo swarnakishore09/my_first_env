@@ -59,7 +59,9 @@ class MyFirstEnvironment(Environment[MotorAction, WaterTankObservation, WaterTan
             done=False,
             info={
                 "task_type": self.task_type,
-                "status": self._current_state.status_message  # Added status here
+                "status": self._current_state.status_message,
+                "quality_status": obs.quality_status,
+                "recommendation": obs.recommendation
             }
         )
 
@@ -74,7 +76,9 @@ class MyFirstEnvironment(Environment[MotorAction, WaterTankObservation, WaterTan
         # 2. Add grading and dynamic status info for the Web UI
         info = {
             "task_type": self.task_type,
-            "status": self._current_state.status_message  # The Alert/Warning appears here!
+            "status": self._current_state.status_message,
+            "quality_status": obs.quality_status,
+            "recommendation": obs.recommendation
         }
         
         if done:
