@@ -26,15 +26,7 @@ The objective is to maintain the water level within the **Safe Zone (40% to 80%)
 
 ## 🚀 Setup and How to Use
 
-### 1. Fork this Environment
-
-Run this in your terminal to create your own version:
-
-```bash
-openenv fork swarnakishore/my_first_env --repo-id swarnakishore/my_first_env
-```
-
-### 2. Connect via Python
+### 1. Connect via Python
 
 ```python
 from openenv.client import BaseEnv as EnvClient
